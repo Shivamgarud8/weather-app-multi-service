@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ANSIBLE_SERVER = "ec2-user@13.50.16.229"
+        ANSIBLE_SERVER = "ec2-user@13.49.49.25"
         INVENTORY = "/etc/ansible/playbooks/inventory.ini"
         PLAYBOOK = "/etc/ansible/playbooks/flask.yml"
         CREDENTIAL_ID = "jenkins-weather"
