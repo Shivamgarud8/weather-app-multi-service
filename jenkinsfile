@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        ANSIBLE_SERVER = "ubuntu@13.50.16.229"  // Ansible server SSH
+        ANSIBLE_SERVER = "ec2-user@13.50.16.229"  // Ansible server SSH
         APP_DIR = "/home/ubuntu/flask-weather-app"
         TARGET_IP = "13.49.49.25"                  // Target server
         PORT = "5000"
