@@ -4,7 +4,7 @@ pipeline {
     environment {
         ANSIBLE_SERVER = "ec2-user@13.50.16.229"  // Ansible server SSH
         APP_DIR = "/home/ubuntu/flask-weather-app"
-        TARGET_IP = "13.49.49.25"                  // Target server
+        TARGET_IP = "51.21.196.192"                  // Target server
         PORT = "5000"
         INVENTORY = "/etc/ansible/playbooks/inventory.ini"
         PLAYBOOK = "/etc/ansible/playbooks/flask.yml"
