@@ -5,20 +5,26 @@ pipeline {
         ANSIBLE_SERVER = "ec2-user@13.50.16.229"
         INVENTORY = "/etc/ansible/playbooks/inventory.ini"
         PLAYBOOK = "/etc/ansible/playbooks/flask.yml"
+        CREDENTIAL_ID = "jenkins-weather"
         TARGET_IP = "51.21.196.192"
         PORT = "5000"
-        CREDENTIAL_ID = "jenkins-weather"
     }
 
     stages {
-        stage('Run Ansible') {
+
+        stage('Checkout Repository') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Run Ansible Playbook') {
             steps {
                 sshagent(credentials: [CREDENTIAL_ID]) {
                     sh """
                     ssh -o StrictHostKeyChecking=no ${ANSIBLE_SERVER} '
-                      export ANSIBLE_HOST_KEY_CHECKING=False
-                      chmod 600 /home/ec2-user/terraform.pem
-                      ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
+                        export ANSIBLE_HOST_KEY_CHECKING=False
+                        ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
                     '
                     """
                 }
@@ -27,8 +33,19 @@ pipeline {
 
         stage('Health Check') {
             steps {
+                sh "sleep 5"
                 sh "curl -f http://${TARGET_IP}:${PORT}/"
             }
+        }
+    }
+
+    post {
+        success {
+            echo "🎉 Deployment successful!"
+            echo "🌍 App URL: http://${TARGET_IP}:${PORT}/"
+        }
+        failure {
+            echo "❌ Deployment failed. Check logs."
         }
     }
 }
