@@ -2,24 +2,23 @@ pipeline {
     agent any
 
     environment {
-        ANSIBLE_SERVER = "ec2-user@13.50.16.229"  // Ansible server SSH
-        APP_DIR = "/home/ubuntu/flask-weather-app"
-        TARGET_IP = "51.21.196.192"                  // Target server
-        PORT = "5000"
+        ANSIBLE_SERVER = "ec2-user@13.50.16.229"
         INVENTORY = "/etc/ansible/playbooks/inventory.ini"
         PLAYBOOK = "/etc/ansible/playbooks/flask.yml"
-        CREDENTIAL_ID = "jenkins-weather"           // Jenkins SSH credential
+        TARGET_IP = "51.21.196.192"
+        PORT = "5000"
+        CREDENTIAL_ID = "jenkins-weather"
     }
 
     stages {
-        stage('Run Ansible Playbook') {
+        stage('Run Ansible') {
             steps {
                 sshagent(credentials: [CREDENTIAL_ID]) {
-                    echo "📦 Running Ansible playbook on Ansible server..."
                     sh """
                     ssh -o StrictHostKeyChecking=no ${ANSIBLE_SERVER} '
-                        export ANSIBLE_HOST_KEY_CHECKING=False
-                        ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
+                      export ANSIBLE_HOST_KEY_CHECKING=False
+                      chmod 600 /home/ec2-user/terraform.pem
+                      ansible-playbook -i ${INVENTORY} ${PLAYBOOK}
                     '
                     """
                 }
@@ -28,28 +27,8 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                echo "🩺 Checking Flask app status on target server..."
-                script {
-                    def result = sh(
-                        script: "curl -s -o /dev/null -w '%{http_code}' http://${TARGET_IP}:${PORT}/",
-                        returnStdout: true
-                    ).trim()
-                    if (result != '200') {
-                        error("❌ Health check failed! Flask app not reachable.")
-                    } else {
-                        echo "✅ Flask app is running on port ${PORT}."
-                    }
-                }
+                sh "curl -f http://${TARGET_IP}:${PORT}/"
             }
-        }
-    }
-
-    post {
-        success {
-            echo "🎉 Deployment successful! Visit: http://${TARGET_IP}:${PORT}/"
-        }
-        failure {
-            echo "❌ Deployment failed! Check Jenkins logs for details."
         }
     }
 }
