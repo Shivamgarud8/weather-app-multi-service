@@ -1,0 +1,52 @@
+- name: Deploy Flask app
+  hosts: web
+  become: yes
+  vars:
+    repo_url: https://github.com/Shivamgarud8/weather-app-multi-service.git
+    app_dir: /home/ubuntu/flask-weather-app
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install system packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+          - curl
+        state: present
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Clone Flask application
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        version: main
+        force: yes
+      become_user: ubuntu
+
+    - name: Install Python dependencies (PEP 668 safe)
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+        virtualenv_command: python3 -m venv
+
+    - name: Stop old Flask app if running
+      command: pkill -f app.py
+      ignore_errors: yes
+
+    - name: Start Flask app
+      shell: |
+        cd {{ app_dir }}
+        nohup venv/bin/python app.py > app.log 2>&1 &
