@@ -6,7 +6,7 @@ pipeline {
         INVENTORY = "/etc/ansible/playbooks/inventory.ini"
         PLAYBOOK = "/etc/ansible/playbooks/flask.yml"
         CREDENTIAL_ID = "jenkins-weather"
-        TARGET_IP = "13.60.169.186"
+        TARGET_IP = "13.60.58.231"
         PORT = "5000"
     }
 
